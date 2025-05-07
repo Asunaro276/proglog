@@ -13,14 +13,14 @@ const (
 	entWidth        = offWidth + posWidth
 )
 
-type Index struct {
+type index struct {
 	file *os.File
 	mmap gommap.MMap
 	size uint64
 }
 
-func newIndex(f *os.File, c Config) (*Index, error) {
-	idx := &Index{
+func newIndex(f *os.File, c Config) (*index, error) {
+	idx := &index{
 		file: f,
 	}
 	fi, err := os.Stat(f.Name())
@@ -44,7 +44,7 @@ func newIndex(f *os.File, c Config) (*Index, error) {
 	return idx, nil
 }
 
-func (i *Index) Close() error {
+func (i *index) Close() error {
 	if err := i.mmap.Sync(gommap.MS_SYNC); err != nil {
 		return err
 	}
@@ -57,7 +57,7 @@ func (i *Index) Close() error {
 	return i.file.Close()
 }
 
-func (i *Index) Read(in int64) (uint32, uint64, error) {
+func (i *index) Read(in int64) (uint32, uint64, error) {
 	if i.size == 0 {
 		return 0, 0, io.EOF
 	}
@@ -79,7 +79,7 @@ func (i *Index) Read(in int64) (uint32, uint64, error) {
 	return out, pos, nil
 }
 
-func (i *Index) Write(off uint32, pos uint64) error {
+func (i *index) Write(off uint32, pos uint64) error {
 	if i.isMaxed() {
 		return io.EOF
 	}
@@ -89,10 +89,10 @@ func (i *Index) Write(off uint32, pos uint64) error {
 	return nil
 }
 
-func (i *Index) isMaxed() bool {
+func (i *index) isMaxed() bool {
 	return uint64(len(i.mmap)) < i.size + entWidth
 }
 
-func (i *Index) Name() string {
+func (i *index) Name() string {
 	return i.file.Name()
 }
